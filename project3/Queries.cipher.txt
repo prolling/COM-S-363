@@ -1,0 +1,72 @@
+// #1
+MATCH (u:TwitterUser)-[:Posted]->(t:Tweets)
+WHERE datetime(t.posted).year = 2016 AND t.retweet_count > 0
+RETURN t.retweet_count, t.textbody, u.screen_name, u.category, u.sub_category
+ORDER BY t.retweet_count DESC
+LIMIT 10
+
+// #2
+MATCH (u:TwitterUser)-[p:Posted]->(t:Tweets)-[tag:Has_Tag]->(h:HashTag)
+WHERE u.ofstate <> 'na' AND datetime(t.posted).year = 2016
+RETURN count(DISTINCT u.ofstate), collect(DISTINCT u.ofstate), toLower(h.hastagname)
+ORDER BY count(DISTINCT u.ofstate) DESC
+LIMIT 10; 
+
+// #3
+MATCH (u:TwitterUser)-[:Posted]->(t:Tweets)-[:Has_Tag]->(hu:HashTag)
+WHERE toLower(hu.hastagname) IN ["iowacaucus", "iacaucus"]
+WITH DISTINCT u.screen_name AS screen_name, u.ofstate AS ofstate, u.numFollowers AS numFollowers
+RETURN screen_name, ofstate
+ORDER BY numFollowers DESC
+
+// #4
+MATCH (u:TwitterUser)
+WHERE u.sub_category = "GOP"
+RETURN u.screen_name AS screen_name, u.sub_category AS sub_category, u.numFollowers AS followers
+ORDER BY followers DESC
+LIMIT 5
+UNION
+MATCH (u:TwitterUser)
+WHERE u.sub_category = "democrat"
+RETURN u.screen_name AS screen_name, u.sub_category AS sub_category, u.numFollowers AS followers
+ORDER BY followers DESC
+LIMIT 5
+
+// #5
+MATCH (t:Tweets)-[:Has_Tag]->(h:HashTag), (t:Tweets)<-[:Posted]-(u:TwitterUser)
+WHERE datetime(t.posted).year = 2016 AND datetime(t.posted).month = 1 AND u.ofstate = "Iowa"
+WITH toLower(h.hastagname) AS tag_name, COUNT(t) AS num_tweets
+RETURN tag_name, num_tweets
+ORDER BY num_tweets DESC
+
+#6
+MATCH (t:Tweets)-[:Has_Tag]->(h:HashTag), (t)<-[:Posted]-(u:TwitterUser)
+WHERE toLower(h.hastagname) = "iowa" AND (u.sub_category = "GOP" OR toLower(u.sub_category) = "democrat")
+  AND datetime(t.posted).year = 2016 AND datetime(t.posted).month = 2
+RETURN t.textbody AS text_body, h.hastagname AS tag_name, u.screen_name AS screen_name, u.sub_category AS sub_category
+
+// #7
+MATCH(t:Tweets)<-[:Posted]-(u:TwitterUser)
+WHERE toUpper(u.sub_category) = 'GOP'
+    with count(t.tid) as cnt, u
+    MATCH (r:URL)<-[:Has_URL]-(t:Tweets)<-[:Posted]-(u:TwitterUser)
+    WHERE datetime(t.posted).year = 2016 AND datetime(t.posted).month = 1
+    RETURN u.screen_name, cnt, collect(r.url)
+    ORDER by cnt DESC;
+
+// #8
+MATCH (u1:TwitterUser)-[p:Posted]->(t:Tweets)-[m:Mentioned]->(u:TwitterUser)
+WITH u.screen_name AS screen_name, u.numFollowers as followers, COUNT(DISTINCT u1.screen_name) AS count_posted, COUNT(t.tid) AS tweetcount 
+RETURN screen_name, followers, count_posted 
+ORDER BY tweetcount DESC
+LIMIT 10;
+
+// #9
+MATCH (uu:URL)<-[:Has_URL]-(t:Tweets)<-[:Posted]-(u:TwitterUser)
+WHERE u.sub_category = "GOP" 
+  AND datetime(t.posted).year = 2016 
+  AND (datetime(t.posted).month = 1 OR datetime(t.posted).month = 2 OR datetime(t.posted).month = 3)
+WITH uu.url AS url, COUNT(DISTINCT t) AS count
+RETURN url, count
+ORDER BY count DESC
+LIMIT 10

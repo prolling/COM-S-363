@@ -1,0 +1,71 @@
+// #1
+MATCH (s:student)
+where s.name='Becky'
+return s.snum, s.ssn;
+
+// #2
+MATCH (dg:degree)<-[:major]-(s:student)
+WHERE s.ssn=123097834
+RETURN dg.name, dg.level;
+
+// #3
+MATCH (dg:degree)<-[:administer]-(d:department)
+WHERE d.dname="Computer Science"
+RETURN dg.dname, dg.level;
+
+// #4
+MATCH (deg:degree)<-[:minor]-(s:student)
+RETURN s.name;
+
+// #5
+MATCH (dg:degree)<-[:minor]-(s:student)
+return count(s);
+
+// #6
+MATCH (c:courses)<-[:register]-(s:student)
+WHERE c.cname="Algorithm"
+RETURN s.name, s.snum;
+
+// #7
+MATCH (c:courses)<-[reg:register]-(s:student)
+WHERE c.number=363
+RETURN s.name, reg.grade;
+
+// #8
+match (s:student)
+return s.name, s.snum
+order by s.dob limit 1;
+
+// #9 
+match (s:student)
+return s.name, s.snum
+order by s.dob DESC limit 1;
+
+// #10
+MATCH (s:student)
+WHERE s.name CONTAINS 'n' OR s.name CONTAINS 'N'
+RETURN s.name, s.snum, s.ssn
+
+// #11
+MATCH (s:student)
+WHERE NOT s.name CONTAINS 'n' AND NOT s.name CONTAINS 'N'
+RETURN s.name, s.snum, s.ssn
+
+// #12
+MATCH (c:courses)<-[reg:register]-(s:student)
+RETURN c.number, c.cname, count(s);
+
+// #13
+MATCH (c:courses)<-[reg:register]-(s:student)
+WHERE reg.regtime="Fall2020"
+RETURN s.name;
+
+// #14
+MATCH (c:courses)<-[:offers]-(dep:department)
+WHERE dep.dname="Computer Science"
+RETURN c.cname, c.number;
+
+// #15
+MATCH (c:courses)<-[:offers]-(dep:department)
+WHERE dep.dname="Computer Science" OR dep.dname="Landscape Architect"
+RETURN c.cname, c.number;

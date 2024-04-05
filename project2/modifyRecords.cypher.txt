@@ -1,0 +1,15 @@
+// #1
+MATCH (s:student)
+WHERE s.ssn= 746897816 
+SET s.name = "Scott"
+
+// #2
+MATCH (s:student)-[m:major]->(deg:degree)
+WHERE s.ssn= 746897816
+SET deg.name = "Computer Science" 
+SET deg.level = "MS"
+
+// #3
+MATCH (s:student)-[reg:register]->(c:courses)
+WHERE reg.regtime = "Spring2021"
+DELETE reg;
